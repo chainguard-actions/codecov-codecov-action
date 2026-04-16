@@ -1,0 +1,4 @@
+{
+  "upstream": "codecov/codecov-action",
+  "version": "v6.0.0"
+}
