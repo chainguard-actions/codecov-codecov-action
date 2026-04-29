@@ -1,6 +1,12 @@
 # codecov/codecov-action
 
-Hardened GitHub Action by [Chainguard](https://www.chainguard.dev).
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/codecov/codecov-action](https://github.com/codecov/codecov-action).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-action/tree/v6.0.0) | — |
 
 ## Privacy
 
