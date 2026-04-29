@@ -2,5 +2,6 @@
   "owner": "codecov",
   "name": "codecov-action",
   "visibility": "public",
-  "description": "GitHub Action that uploads coverage to Codecov :open_umbrella: "
+  "description": "GitHub Action that uploads coverage to Codecov :open_umbrella: ",
+  "block_publish": false
 }
