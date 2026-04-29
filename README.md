@@ -1,5 +1,7 @@
 # codecov/codecov-action
 
+GitHub Action that uploads coverage to Codecov :open_umbrella: 
+
 Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/codecov/codecov-action](https://github.com/codecov/codecov-action).
 
 ## Versions
