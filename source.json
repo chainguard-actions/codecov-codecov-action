@@ -1,4 +1,6 @@
 {
-  "upstream": "codecov/codecov-action",
-  "version": "v6.0.0"
+  "owner": "codecov",
+  "repo": "codecov-action",
+  "version": "",
+  "url": "https://github.com/codecov/codecov-action"
 }
