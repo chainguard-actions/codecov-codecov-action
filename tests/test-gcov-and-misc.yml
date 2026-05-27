@@ -1,0 +1,49 @@
+name: Test gcov and miscellaneous inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake binary and config files
+        run: |
+          mkdir -p /tmp/codecov-test
+          # Create a fake codecov.yml
+          cat > /tmp/codecov-test/codecov.yml << 'EOF'
+          coverage:
+            status:
+              project:
+                default:
+                  target: auto
+          EOF
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-testing
+          dry_run: 'true'
+          skip_validation: 'true'
+          handle_no_reports_found: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          codecov_yml_path: /tmp/codecov-test/codecov.yml
+          gcov_args: '--branch-probabilities'
+          gcov_executable: gcov
+          gcov_ignore: 'tests/*'
+          gcov_include: 'src/*'
+          disable_file_fixes: 'false'
+          disable_search: 'true'
+          disable_safe_directory: 'false'
+          recurse_submodules: 'false'
+          use_legacy_upload_endpoint: 'false'
+          use_pypi: 'false'
+          use_oidc: 'false'
+          version: latest
+          run_command: upload-coverage
+      - name: Assert action completed
+        run: |
+          echo "gcov and misc inputs test completed successfully"
+          echo "PASS"

@@ -1,4 +1,4 @@
-name: Test basic usage
+name: Test binary input
 on:
   workflow_dispatch:
 jobs:
@@ -9,27 +9,27 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create a fake coverage file
+      - name: Create a fake codecov binary
         run: |
-          mkdir -p /tmp/coverage
-          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage/coverage.xml
+          mkdir -p /tmp/fake-codecov
+          # Create a minimal fake binary that just exits 0
+          cat > /tmp/fake-codecov/codecov << 'EOF'
+          #!/bin/bash
+          echo "Fake codecov binary called with args: $@"
+          exit 0
+          EOF
+          chmod +x /tmp/fake-codecov/codecov
       - id: action
         uses: .
         with:
-          token: fake-token-for-testing
+          binary: /tmp/fake-codecov/codecov
           dry_run: 'true'
           skip_validation: 'true'
           handle_no_reports_found: 'true'
           disable_telem: 'true'
-          files: /tmp/coverage/coverage.xml
-          flags: unit,integration
-          name: my-coverage-upload
-          directory: /tmp/coverage
-          exclude: node_modules,vendor
-          env_vars: OS,PYTHON
-          verbose: 'true'
           fail_ci_if_error: 'false'
+          token: fake-token-for-testing
       - name: Assert action completed
         run: |
-          echo "Action completed successfully"
+          echo "Binary input test completed successfully"
           echo "PASS"
