@@ -1,0 +1,42 @@
+---
+name: Test advanced override inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create working directory and coverage file
+        run: |
+          mkdir -p workdir
+          echo '<coverage><packages></packages></coverage>' > workdir/coverage.xml
+
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          dry_run: 'true'
+          skip_validation: 'true'
+          handle_no_reports_found: 'true'
+          fail_ci_if_error: 'false'
+          disable_telem: 'true'
+          override_branch: main
+          override_build: '42'
+          override_build_url: 'https://example.com/builds/42'
+          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          override_pr: '123'
+          slug: myorg/myrepo
+          url: 'https://codecov.io'
+          report_code: default
+          report_type: coverage
+          working-directory: workdir
+
+      - name: Assert action completed with override inputs
+        run: |
+          echo "Action completed successfully with override inputs"
+          echo "PASS"

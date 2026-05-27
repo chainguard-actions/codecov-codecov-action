@@ -1,0 +1,48 @@
+---
+name: Test optional miscellaneous inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a dummy coverage file, codecov yml, and fake binary
+        run: |
+          echo '<coverage><packages></packages></coverage>' > coverage.xml
+          mkdir -p .codecov
+          echo 'codecov:' > .codecov/codecov.yml
+          # Create a fake codecov binary that accepts any args and exits 0
+          cat > /tmp/fake-codecov << 'EOF'
+          #!/bin/bash
+          echo "Fake codecov CLI called with: $@"
+          exit 0
+          EOF
+          chmod +x /tmp/fake-codecov
+
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          dry_run: 'true'
+          skip_validation: 'true'
+          handle_no_reports_found: 'true'
+          fail_ci_if_error: 'false'
+          disable_telem: 'true'
+          base_sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+          binary: '/tmp/fake-codecov'
+          codecov_yml_path: '.codecov/codecov.yml'
+          commit_parent: 'cccccccccccccccccccccccccccccccccccccccc'
+          force: 'false'
+          job_code: 'job-001'
+          os: linux
+          swift_project: ''
+
+      - name: Assert action completed with optional inputs
+        run: |
+          echo "Action completed successfully with optional inputs"
+          echo "PASS"

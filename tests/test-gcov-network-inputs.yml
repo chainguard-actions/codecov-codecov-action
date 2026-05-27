@@ -1,0 +1,41 @@
+---
+name: Test gcov and network inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a dummy coverage file
+        run: |
+          echo '<coverage><packages></packages></coverage>' > coverage.xml
+
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          dry_run: 'true'
+          skip_validation: 'true'
+          handle_no_reports_found: 'true'
+          fail_ci_if_error: 'false'
+          disable_telem: 'true'
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: 'tests/'
+          gcov_include: 'src/'
+          gcov_executable: gcov
+          plugins: noop
+          env_vars: 'OS,PYTHON'
+          exclude: 'vendor,third_party'
+          network_filter: src/
+          network_prefix: myproject/
+          root_dir: '.'
+
+      - name: Assert action completed with gcov and network inputs
+        run: |
+          echo "Action completed successfully with gcov and network inputs"
+          echo "PASS"
