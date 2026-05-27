@@ -1,0 +1,31 @@
+name: Test basic usage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create coverage file
+        run: |
+          mkdir -p /tmp/coverage
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage/coverage.xml
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-testing
+          files: /tmp/coverage/coverage.xml
+          flags: unit,integration
+          name: my-upload
+          directory: /tmp/coverage
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_search: 'false'
+          working-directory: /tmp
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully"
+          echo "PASS"

@@ -1,0 +1,31 @@
+name: Test gcov and network inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-testing
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: 'tests/*'
+          gcov_include: 'src/*'
+          env_vars: 'OS,PYTHON'
+          exclude: 'vendor,node_modules'
+          plugins: 'noop'
+          root_dir: '.'
+          network_filter: 'src/'
+          network_prefix: 'myproject/'
+      - name: Assert action completed
+        run: |
+          echo "Action completed with gcov and network inputs"
+          echo "PASS"
