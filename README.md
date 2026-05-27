@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.0) | — |
+| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.0) | [`57e3a13`](https://github.com/codecov/codecov-action/commit/57e3a136b779b570ffcdbf80b3bdc90e7fab3de2) |
 | v6.0.1 | [`v6.0.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.1) | [`e79a696`](https://github.com/codecov/codecov-action/commit/e79a6962e0d4c0c17b229090214935d2e33f8354) |
 
 ## Privacy
