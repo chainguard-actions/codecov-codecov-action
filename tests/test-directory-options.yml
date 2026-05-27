@@ -1,0 +1,35 @@
+name: Test directory and path options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory and coverage file
+        run: |
+          mkdir -p workdir/coverage
+          echo '{}' > workdir/coverage/lcov.info
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-testing
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          directory: coverage
+          exclude: node_modules,vendor
+          env_vars: OS,PYTHON
+          plugins: noop
+          report_code: myreport
+          report_type: coverage
+          root_dir: workdir
+          network_filter: workdir
+          network_prefix: prefix/
+          working-directory: workdir
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully with directory options"
+          echo "PASS"

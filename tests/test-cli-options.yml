@@ -1,0 +1,37 @@
+name: Test CLI and validation options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Download codecov CLI binary
+        run: |
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          BINARY_PATH="$(pwd)/codecov"
+          echo "CODECOV_BINARY=$BINARY_PATH" >> "$GITHUB_ENV"
+      - id: action
+        uses: .
+        with:
+          binary: ${{ env.CODECOV_BINARY }}
+          skip_validation: 'true'
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+          disable_file_fixes: 'true'
+          disable_telem: 'true'
+          use_legacy_upload_endpoint: 'false'
+          recurse_submodules: 'false'
+          use_pypi: 'false'
+          version: 'latest'
+          git_service: github
+          gcov_executable: gcov
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully with CLI options"
+          echo "PASS"
