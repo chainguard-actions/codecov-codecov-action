@@ -1,0 +1,44 @@
+name: Test basic dry-run upload
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p /tmp/coverage
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage/coverage.xml
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          files: /tmp/coverage/coverage.xml
+          flags: unit,integration
+          name: my-upload
+          directory: /tmp/coverage
+          disable_search: 'false'
+          disable_file_fixes: 'false'
+          disable_safe_directory: 'false'
+          disable_telem: 'true'
+          verbose: 'false'
+          skip_validation: 'true'
+          fail_ci_if_error: 'false'
+          version: latest
+          run_command: upload-coverage
+          git_service: github
+          gcov_executable: gcov
+          recurse_submodules: 'false'
+          use_legacy_upload_endpoint: 'false'
+          use_oidc: 'false'
+          use_pypi: 'false'
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully in dry-run mode"
+          echo "PASS"

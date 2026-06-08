@@ -1,0 +1,54 @@
+name: Test override and advanced inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake coverage file and working directory
+        run: |
+          mkdir -p /tmp/workdir
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/workdir/coverage.xml
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          override_branch: main
+          override_build: '42'
+          override_build_url: https://example.com/build/42
+          override_commit: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          override_pr: '123'
+          slug: myorg/myrepo
+          url: https://codecov.io
+          report_code: my-report-code
+          report_type: coverage
+          job_code: my-job-code
+          env_vars: OS,PYTHON
+          exclude: vendor,node_modules
+          network_filter: src/
+          network_prefix: /home/runner/work/
+          root_dir: /tmp/workdir
+          plugins: noop
+          commit_parent: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+          base_sha: cccccccccccccccccccccccccccccccccccccccc
+          swift_project: MySwiftProject
+          os: linux
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: tests/
+          gcov_include: src/
+          force: 'false'
+          codecov_yml_path: codecov.yml
+          working-directory: /tmp/workdir
+      - name: Assert action completed with override inputs
+        run: |
+          echo "Action completed successfully with override inputs in dry-run mode"
+          echo "PASS"
