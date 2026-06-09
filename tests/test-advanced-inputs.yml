@@ -1,0 +1,39 @@
+name: Test advanced inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory and fake coverage
+        run: |
+          mkdir -p /tmp/workdir
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/workdir/coverage.xml
+          echo 'coverage_precision: 2' > /tmp/workdir/codecov.yml
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-testing
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: tests/
+          gcov_include: src/
+          commit_parent: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+          base_sha: cccccccccccccccccccccccccccccccccccccccc
+          force: 'false'
+          os: linux
+          swift_project: MySwiftProject
+          working-directory: /tmp/workdir
+          codecov_yml_path: /tmp/workdir/codecov.yml
+      - name: Assert action completed
+        run: |
+          echo "Action completed with advanced inputs"
+          echo "PASS"

@@ -1,4 +1,4 @@
-name: Test binary input
+name: Test basic usage
 on:
   workflow_dispatch:
 jobs:
@@ -9,11 +9,10 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Download codecov CLI binary
+      - name: Create a fake coverage file
         run: |
-          curl -Os https://cli.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          echo "Binary downloaded to $(pwd)/codecov"
+          mkdir -p /tmp/coverage
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage/coverage.xml
       - id: action
         uses: .
         with:
@@ -21,10 +20,17 @@ jobs:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           disable_search: 'true'
+          files: /tmp/coverage/coverage.xml
+          flags: unit
+          name: test-upload
+          directory: /tmp/coverage
+          env_vars: GITHUB_REF
+          exclude: node_modules
+          verbose: 'false'
+          version: latest
           skip_validation: 'true'
           disable_telem: 'true'
-          binary: ${{ github.workspace }}/codecov
       - name: Assert action completed
         run: |
-          echo "Action completed with binary input"
+          echo "Action completed successfully"
           echo "PASS"
