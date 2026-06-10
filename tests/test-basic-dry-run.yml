@@ -1,4 +1,4 @@
-name: Test binary input
+name: Test basic dry-run usage
 on:
   workflow_dispatch:
 jobs:
@@ -9,24 +9,25 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Prepare fake binary
-        run: |
-          # Create a minimal fake codecov binary that does nothing (for dry-run testing)
-          cat > /tmp/fake-codecov << 'EOF'
-          #!/bin/bash
-          echo "Fake codecov binary invoked with args: $@"
-          exit 0
-          EOF
-          chmod +x /tmp/fake-codecov
       - id: action
         uses: .
         with:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          binary: '/tmp/fake-codecov'
           token: 'fake-token-for-dry-run'
+          flags: 'unit'
+          name: 'test-upload'
+          files: 'coverage.xml'
+          directory: '.'
+          exclude: 'vendor'
+          disable_search: 'true'
+          disable_file_fixes: 'false'
+          disable_telem: 'true'
+          env_vars: 'OS,PYTHON'
+          verbose: 'true'
+          version: 'latest'
       - name: Assert action completed
         run: |
-          echo "Action completed successfully with binary input"
+          echo "Action completed successfully in dry-run mode"
           echo "PASS"

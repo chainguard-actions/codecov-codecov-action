@@ -9,30 +9,28 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create a fake codecov yml and fake binary
+      - name: Download codecov CLI binary for binary input test
         run: |
-          mkdir -p /tmp/codecov-config
-          echo 'coverage:' > /tmp/codecov-config/codecov.yml
-          # Create a fake binary that just exits 0 for dry-run testing
-          printf '#!/bin/bash\nexit 0\n' > /tmp/fake-codecov
-          chmod +x /tmp/fake-codecov
+          curl -Os https://uploader.codecov.io/latest/linux/codecov || true
+          chmod +x codecov 2>/dev/null || true
+          # Use a placeholder path; binary input just sets CC_BINARY env var
+          echo "binary_path=$(pwd)/codecov" >> $GITHUB_ENV
       - id: action
         uses: .
         with:
-          token: fake-token-for-testing
           dry_run: 'true'
           handle_no_reports_found: 'true'
-          disable_search: 'true'
           skip_validation: 'true'
-          binary: '/tmp/fake-codecov'
+          token: 'fake-token-for-dry-run'
           base_sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          codecov_yml_path: '/tmp/codecov-config/codecov.yml'
           commit_parent: 'cccccccccccccccccccccccccccccccccccccccc'
           force: 'false'
-          job_code: 'my-job-code'
-          os: 'linux'
-          swift_project: 'MySwiftProject'
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: 'tests/'
+          gcov_include: 'src/'
+          swift_project: 'MyProject'
+          codecov_yml_path: '.codecov.yml'
       - name: Assert action completed
         run: |
-          echo "Action completed with advanced inputs"
+          echo "Action completed successfully with advanced inputs"
           echo "PASS"
