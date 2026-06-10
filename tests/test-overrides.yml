@@ -14,25 +14,22 @@ jobs:
         with:
           token: fake-token-for-testing
           dry_run: 'true'
+          skip_validation: 'true'
           handle_no_reports_found: 'true'
           disable_search: 'true'
-          skip_validation: 'true'
-          disable_telem: 'true'
+          fail_ci_if_error: 'false'
           override_branch: main
           override_build: '42'
-          override_build_url: https://example.com/build/42
-          override_commit: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          override_build_url: 'https://example.com/build/42'
+          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
           override_pr: '123'
           slug: myorg/myrepo
-          url: https://codecov.io
+          url: 'https://codecov.io'
+          os: linux
           report_code: default
           report_type: coverage
-          job_code: job-001
-          plugins: noop
-          root_dir: .
-          network_filter: src/
-          network_prefix: /workspace/
+          run_command: upload-coverage
       - name: Assert action completed
         run: |
-          echo "Action completed with override inputs"
+          echo "Override inputs test completed successfully"
           echo "PASS"

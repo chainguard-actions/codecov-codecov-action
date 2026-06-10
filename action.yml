@@ -240,8 +240,7 @@ runs:
           echo -e "\033[0;32m==>\033[0m Fork detected"
           CC_FORK="true"
         fi
-        safe_cc_fork=$(printf '%s' "$CC_FORK" | tr -d '\n\r')
-        echo "CC_FORK=$safe_cc_fork" >> "$GITHUB_ENV"
+        echo "CC_FORK=$CC_FORK" >> "$GITHUB_ENV"
       env:
         GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
@@ -296,8 +295,8 @@ runs:
           echo "TOKENLESS=$safe_tokenless" >> "$GITHUB_ENV"
         fi
 
-        safe_cc_branch=$(printf '%s' "$CC_BRANCH" | tr -d '\n\r')
-        echo "CC_BRANCH=$safe_cc_branch" >> "$GITHUB_ENV"
+        safe_branch=$(printf '%s' "$CC_BRANCH" | tr -d '\n\r')
+        echo "CC_BRANCH=$safe_branch" >> "$GITHUB_ENV"
       env:
         CC_BRANCH: ${{ inputs.override_branch }}
         GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
@@ -315,10 +314,10 @@ runs:
           CC_PR="$GITHUB_EVENT_NUMBER"
         fi
 
-        safe_cc_sha=$(printf '%s' "$CC_SHA" | tr -d '\n\r')
-        safe_cc_pr=$(printf '%s' "$CC_PR" | tr -d '\n\r')
-        echo "CC_SHA=$safe_cc_sha" >> "$GITHUB_ENV"
-        echo "CC_PR=$safe_cc_pr" >> "$GITHUB_ENV"
+        safe_sha=$(printf '%s' "$CC_SHA" | tr -d '\n\r')
+        safe_pr=$(printf '%s' "$CC_PR" | tr -d '\n\r')
+        echo "CC_SHA=$safe_sha" >> "$GITHUB_ENV"
+        echo "CC_PR=$safe_pr" >> "$GITHUB_ENV"
       env:
         CC_PR: ${{ inputs.override_pr }}
         CC_SHA: ${{ inputs.override_commit }}

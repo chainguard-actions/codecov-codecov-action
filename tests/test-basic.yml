@@ -18,18 +18,17 @@ jobs:
         with:
           token: fake-token-for-testing
           dry_run: 'true'
-          handle_no_reports_found: 'true'
-          disable_search: 'true'
           files: /tmp/coverage/coverage.xml
           flags: unit
           name: test-upload
           directory: /tmp/coverage
-          env_vars: GITHUB_REF
-          exclude: node_modules
+          working-directory: .
+          disable_search: 'true'
+          handle_no_reports_found: 'true'
+          fail_ci_if_error: 'false'
           verbose: 'false'
           version: latest
           skip_validation: 'true'
-          disable_telem: 'true'
       - name: Assert action completed
         run: |
           echo "Action completed successfully"
