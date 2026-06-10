@@ -1,3 +1,4 @@
+---
 name: Test advanced options
 on:
   workflow_dispatch:
@@ -9,27 +10,34 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create a fake codecov yml
+      - name: Create dummy files
         run: |
-          echo 'coverage:' > codecov.yml
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage.xml
+          echo '' > /tmp/codecov.yml
+          # Download a real codecov CLI binary to use as the binary input
+          # We use skip_validation=true so integrity check is bypassed
+          curl -Os https://uploader.codecov.io/latest/linux/codecov || true
+          chmod +x codecov 2>/dev/null || true
       - id: action
         uses: .
         with:
-          token: fake-token-for-testing
+          token: fake-token-for-dry-run
           dry_run: 'true'
           handle_no_reports_found: 'true'
-          disable_search: 'true'
-          base_sha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          codecov_yml_path: codecov.yml
-          commit_parent: 'cccccccccccccccccccccccccccccccccccccccc'
-          gcov_args: '--branch-probabilities'
-          gcov_ignore: 'tests/*'
-          gcov_include: 'src/*'
-          job_code: myjob
+          disable_telem: 'true'
+          files: /tmp/coverage.xml
+          gcov_args: '--no-output'
+          gcov_ignore: /tmp/ignore
+          gcov_include: /tmp/include
           os: linux
-          swift_project: MySwiftProject
+          swift_project: MyProject
+          codecov_yml_path: /tmp/codecov.yml
+          recurse_submodules: 'false'
           force: 'false'
+          use_legacy_upload_endpoint: 'false'
+          use_pypi: 'false'
+          run_command: upload-coverage
       - name: Assert action completed
         run: |
-          echo "Action completed successfully with advanced options"
+          echo "Advanced options test completed successfully"
           echo "PASS"

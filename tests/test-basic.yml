@@ -1,5 +1,5 @@
 ---
-name: Test basic dry-run upload
+name: Test basic usage
 on:
   workflow_dispatch:
 jobs:
@@ -10,38 +10,31 @@ jobs:
       GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
       - name: Create a dummy coverage file
         run: |
-          mkdir -p coverage
-          echo '<coverage><packages></packages></coverage>' > coverage/coverage.xml
-
+          mkdir -p /tmp/coverage
+          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage/coverage.xml
       - id: action
         uses: .
         with:
           token: fake-token-for-dry-run
           dry_run: 'true'
-          files: coverage/coverage.xml
+          handle_no_reports_found: 'true'
+          files: /tmp/coverage/coverage.xml
           flags: unit
-          name: test-upload
-          directory: coverage
+          name: my-upload
+          directory: /tmp/coverage
           disable_search: 'false'
-          disable_file_fixes: 'false'
           fail_ci_if_error: 'false'
           verbose: 'false'
           version: latest
-          handle_no_reports_found: 'true'
+          disable_file_fixes: 'false'
           disable_telem: 'true'
-          recurse_submodules: 'false'
-          skip_validation: 'true'
-          use_legacy_upload_endpoint: 'false'
-          use_pypi: 'false'
-          use_oidc: 'false'
-          git_service: github
-          run_command: upload-coverage
-          disable_safe_directory: 'false'
-
+          env_vars: GITHUB_REF
+          exclude: /tmp/exclude
+          plugins: noop
+          working-directory: /tmp
       - name: Assert action completed
         run: |
-          echo "Action completed successfully in dry-run mode"
+          echo "Action completed successfully in dry_run mode"
           echo "PASS"
