@@ -1,0 +1,24 @@
+name: Test override commit and build inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          commit_parent: abc1234567890abcdef1234567890abcdef12345
+          override_commit: def1234567890abcdef1234567890abcdef12345
+          override_build: "42"
+          override_build_url: https://example.com/builds/42
+          dry_run: true
+          handle_no_reports_found: true
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully with commit/build override inputs"
+          echo "PASS"

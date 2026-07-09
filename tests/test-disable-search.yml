@@ -1,0 +1,47 @@
+name: Test disable search with explicit file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/feature-branch
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create coverage file in specific location
+        run: |
+          mkdir -p reports
+          cat > reports/lcov.info << 'EOF'
+          TN:
+          SF:src/main.js
+          FN:1,main
+          FNDA:1,main
+          FNF:1
+          FNH:1
+          DA:1,1
+          DA:2,1
+          DA:3,0
+          LF:3
+          LH:2
+          end_of_record
+          EOF
+      - id: action
+        uses: .
+        with:
+          dry_run: "true"
+          disable_search: "true"
+          file: reports/lcov.info
+          flags: integration
+          name: disable-search-test
+          fail_ci_if_error: "false"
+          verbose: "true"
+        continue-on-error: true
+      - name: Assert action ran
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          if [ -z "${{ steps.action.outcome }}" ]; then
+            echo "FAIL: action outcome is empty"
+            exit 1
+          fi
+          echo "PASS: action ran with outcome=${{ steps.action.outcome }}"

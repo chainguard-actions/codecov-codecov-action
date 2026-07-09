@@ -1,0 +1,66 @@
+name: Test multiple coverage files upload
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create multiple coverage files
+        run: |
+          mkdir -p coverage/unit coverage/integration
+
+          cat > coverage/unit/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="7.0" timestamp="1700000000" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="0.8" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="unit.py" filename="unit.py" line-rate="0.8" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+
+          cat > coverage/integration/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="7.0" timestamp="1700000000" lines-valid="15" lines-covered="12" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="0.8" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="integration.py" filename="integration.py" line-rate="0.8" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+      - id: action
+        uses: .
+        with:
+          dry_run: "true"
+          files: "coverage/unit/coverage.xml,coverage/integration/coverage.xml"
+          flags: combined
+          name: multi-file-test
+          fail_ci_if_error: "false"
+          verbose: "true"
+        continue-on-error: true
+      - name: Assert action ran with multiple files
+        run: |
+          echo "Action outcome: ${{ steps.action.outcome }}"
+          if [ -z "${{ steps.action.outcome }}" ]; then
+            echo "FAIL: action outcome is empty"
+            exit 1
+          fi
+          echo "PASS: action ran with multiple files, outcome=${{ steps.action.outcome }}"

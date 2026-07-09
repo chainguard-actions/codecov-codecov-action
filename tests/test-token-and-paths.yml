@@ -1,0 +1,42 @@
+name: Test token and path inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create coverage directory and file
+        run: |
+          mkdir -p /tmp/coverage-dir
+          cat > /tmp/coverage-dir/coverage.xml <<'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages/>
+          </coverage>
+          EOF
+      - name: Create codecov yml
+        run: |
+          mkdir -p /tmp/codecov-config
+          cat > /tmp/codecov-config/codecov.yml <<'EOF'
+          codecov:
+            notify:
+              wait_for_ci: false
+          EOF
+      - id: action
+        uses: .
+        with:
+          token: fake-token-for-dry-run
+          codecov_yml_path: /tmp/codecov-config/codecov.yml
+          directory: /tmp/coverage-dir
+          working-directory: /tmp
+          dry_run: true
+          disable_search: true
+          handle_no_reports_found: true
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully with token, codecov_yml_path, directory, and working-directory inputs"
+          echo "PASS"
