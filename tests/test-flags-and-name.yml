@@ -1,0 +1,49 @@
+name: Test flags and upload name inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p /tmp/coverage-dir
+          cat > /tmp/coverage-dir/coverage.xml <<'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="6.0" timestamp="1234567890" lines-valid="10" lines-covered="10" line-rate="1.0" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="1.0" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="example.py" filename="example.py" line-rate="1.0" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          dry_run: "true"
+          file: /tmp/coverage-dir/coverage.xml
+          flags: "unittests"
+          name: "my-upload"
+          verbose: "true"
+        continue-on-error: true
+
+      - name: Assert action completed with flags and name
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "FAIL: action failed when using flags and name inputs"
+            exit 1
+          fi
+          echo "PASS: action accepted flags and name inputs"

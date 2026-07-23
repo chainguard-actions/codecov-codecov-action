@@ -1,0 +1,22 @@
+name: Test override and commit options
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          commit_parent: abc1234def5678901234567890abcdef12345678
+          exclude: vendor,node_modules
+          override_build: "42"
+          override_build_url: https://example.com/builds/42
+          override_commit: abc1234def5678901234567890abcdef12345678
+          dry_run: true
+          handle_no_reports_found: true
+      - name: Assert action completed
+        run: |
+          echo "Action completed successfully with commit_parent, exclude, override_build, override_build_url, override_commit inputs"
+          echo "PASS"
