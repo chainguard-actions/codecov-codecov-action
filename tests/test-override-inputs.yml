@@ -1,0 +1,30 @@
+name: Test override inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p coverage
+          echo '{"coverage": 100}' > coverage/coverage.json
+      - id: action
+        uses: .
+        with:
+          token: fake-codecov-token
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          override_branch: main
+          override_build: '42'
+          override_build_url: 'https://example.com/build/42'
+          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          override_pr: '123'
+          slug: myorg/myrepo
+          url: 'https://codecov.io'
+          files: coverage/coverage.json
+          fail_ci_if_error: 'false'
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with override inputs"

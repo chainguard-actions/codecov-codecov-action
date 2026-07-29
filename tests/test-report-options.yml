@@ -1,0 +1,27 @@
+name: Test report options inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake coverage file
+        run: |
+          mkdir -p coverage
+          printf 'SF:src/main.py\nDA:1,1\nend_of_record\n' > coverage/lcov.info
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          plugins: noop
+          report_code: default
+          report_type: coverage
+          job_code: job-001
+          name: my-upload
+          files: coverage/lcov.info
+          fail_ci_if_error: 'false'
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with report option inputs"

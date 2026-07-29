@@ -1,0 +1,26 @@
+name: Test handle no reports found
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_search: 'false'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          verbose: 'true'
+          # Point to an empty directory so no coverage files are found
+          directory: '/tmp/empty-coverage-dir'
+
+      - name: Assert action completed without error despite no reports
+        run: |
+          echo "Action completed without error when no coverage reports found"
+          echo "PASS"

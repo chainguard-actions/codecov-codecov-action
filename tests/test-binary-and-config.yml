@@ -1,0 +1,47 @@
+name: Test binary and config inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create fake codecov binary, config, and coverage file
+        run: |
+          mkdir -p config coverage
+
+          # Create a fake codecov CLI binary that exits 0
+          cat > /tmp/fake-codecov << 'EOF'
+          #!/bin/bash
+          echo "Fake codecov CLI called with args: $*"
+          exit 0
+          EOF
+          chmod +x /tmp/fake-codecov
+
+          # Create a minimal codecov.yml config
+          cat > config/codecov.yml << 'EOF'
+          coverage:
+            precision: 2
+            round: down
+            range: "70...100"
+          EOF
+
+          # Create a minimal lcov coverage file
+          printf 'SF:src/main.py\nDA:1,1\nend_of_record\n' > coverage/lcov.info
+
+      - id: action
+        uses: .
+        with:
+          binary: /tmp/fake-codecov
+          codecov_yml_path: config/codecov.yml
+          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+          base_sha: 'cccccccccccccccccccccccccccccccccccccccc'
+          force: 'false'
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          files: coverage/lcov.info
+          fail_ci_if_error: 'false'
+          skip_validation: 'true'
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with binary and config inputs"

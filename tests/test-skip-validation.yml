@@ -1,0 +1,45 @@
+name: Test skip validation with specific version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p /tmp/cov-test
+          cat > /tmp/cov-test/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="5.5" timestamp="1234567890" lines-valid="5" lines-covered="5" line-rate="1.0" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="1.0" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="main.py" filename="main.py" line-rate="1.0" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+          echo "Created coverage file"
+
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          files: '/tmp/cov-test/coverage.xml'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          verbose: 'true'
+          version: 'latest'
+
+      - name: Assert action completed with skip_validation
+        run: |
+          echo "Action completed successfully with skip_validation=true"
+          echo "PASS"

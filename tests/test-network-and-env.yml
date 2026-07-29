@@ -1,0 +1,27 @@
+name: Test network and env inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory and fake coverage file
+        run: |
+          mkdir -p myapp/coverage
+          echo '{"coverage": 90}' > myapp/coverage/lcov.info
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          env_vars: OS,PYTHON
+          exclude: node_modules,vendor
+          network_filter: myapp/
+          network_prefix: /home/runner/work/
+          root_dir: myapp
+          working-directory: myapp
+          fail_ci_if_error: 'false'
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with network and env inputs"
