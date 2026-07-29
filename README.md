@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v4.6.0 | [`v4.6.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v4.6.0) | [`b9fd7d1`](https://github.com/codecov/codecov-action/commit/b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238) |
+| v5.5.5 | [`v5.5.5`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v5.5.5) | [`0fb7174`](https://github.com/codecov/codecov-action/commit/0fb7174895f61a3b6b78fc075e0cd60383518dac) |
 | v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.0) | [`57e3a13`](https://github.com/codecov/codecov-action/commit/57e3a136b779b570ffcdbf80b3bdc90e7fab3de2) |
 | v6.0.1 | [`v6.0.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.1) | [`e79a696`](https://github.com/codecov/codecov-action/commit/e79a6962e0d4c0c17b229090214935d2e33f8354) |
 | v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.0.0) | [`fb8b358`](https://github.com/codecov/codecov-action/commit/fb8b3582c8e4def4969c97caa2f19720cb33a72f) |
