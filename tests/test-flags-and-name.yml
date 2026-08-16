@@ -1,0 +1,26 @@
+name: Test custom flags and name
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p coverage
+          echo '<?xml version="1.0" ?><coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0"><packages></packages></coverage>' > coverage/coverage.xml
+      - id: action
+        uses: .
+        with:
+          dry_run: "true"
+          files: coverage/coverage.xml
+          flags: "unit,integration"
+          name: "my-custom-upload"
+          skip_validation: "true"
+          disable_telem: "true"
+          fail_ci_if_error: "false"
+      - name: Assert action completed with custom flags and name
+        run: |
+          echo "Action completed with custom flags and name"
+          echo "PASS"

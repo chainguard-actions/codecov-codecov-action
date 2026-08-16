@@ -1,0 +1,23 @@
+name: Test gcov and network inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          gcov_args: "--preserve-paths"
+          gcov_ignore: /tmp/ignore
+          gcov_include: /tmp/include
+          root_dir: /tmp
+          network_filter: /tmp
+          network_prefix: prefix/
+          os: linux
+          dry_run: "true"
+          handle_no_reports_found: "true"
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with gcov and network inputs"

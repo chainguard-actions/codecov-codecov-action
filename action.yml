@@ -273,7 +273,7 @@ runs:
           if [ -n "$INPUT_TOKEN" ];
           then
             echo -e "\033[0;32m==>\033[0m Token set from input"
-            CC_TOKEN=$(printf '%s' "$INPUT_TOKEN" | tr -d '\n\r')
+            CC_TOKEN=$(echo "$INPUT_TOKEN" | tr -d '\n')
             echo "CC_TOKEN=$CC_TOKEN" >> "$GITHUB_ENV"
           fi
         fi

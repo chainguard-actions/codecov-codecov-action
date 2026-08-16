@@ -1,0 +1,35 @@
+name: Test system dependency check
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify required system dependencies are present
+        run: |
+          for cmd in bash git curl gpg; do
+            if ! command -v "$cmd" > /dev/null 2>&1; then
+              echo "FAIL: Required dependency '$cmd' is missing"
+              exit 1
+            fi
+            echo "OK: $cmd found at $(command -v $cmd)"
+          done
+          echo "PASS: All required system dependencies are present"
+
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          skip_validation: 'false'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+
+      - name: Assert action completed with GPG validation enabled
+        run: |
+          echo "Action completed with GPG validation (skip_validation=false)"
+          echo "PASS: dependency check and GPG validation passed"

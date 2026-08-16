@@ -1,0 +1,31 @@
+name: Test enterprise and misc inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory and codecov yml
+        run: |
+          mkdir -p /tmp/workdir
+          cat > /tmp/workdir/codecov.yml << 'EOF'
+          coverage:
+            status:
+              project:
+                default:
+                  target: auto
+          EOF
+      - id: action
+        uses: .
+        with:
+          url: https://codecov.io
+          job_code: test-job-001
+          swift_project: MySwiftProject
+          working-directory: /tmp/workdir
+          codecov_yml_path: /tmp/workdir/codecov.yml
+          dry_run: "true"
+          handle_no_reports_found: "true"
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with enterprise and misc inputs"

@@ -1,0 +1,27 @@
+name: Test binary and commit inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Download a real codecov CLI binary for testing
+        run: |
+          # Download the codecov CLI to use as the binary input
+          curl -Os https://cli.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          echo "Binary downloaded: $(pwd)/codecov"
+      - id: action
+        uses: .
+        with:
+          binary: ${{ github.workspace }}/codecov
+          commit_parent: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          base_sha: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+          force: "false"
+          dry_run: "true"
+          handle_no_reports_found: "true"
+          skip_validation: "true"
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with binary and commit inputs"
