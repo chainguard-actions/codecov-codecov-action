@@ -1,0 +1,62 @@
+name: Test flags and custom name inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create mock Codecov CLI binary that captures args
+        run: |
+          cat > /tmp/mock-codecov-flags << 'EOF'
+          #!/usr/bin/env bash
+          echo "Mock Codecov CLI called with args: $@"
+          # Write args to a file for inspection
+          echo "$@" > /tmp/codecov-args.txt
+          exit 0
+          EOF
+          chmod +x /tmp/mock-codecov-flags
+
+      - id: action
+        uses: .
+        with:
+          binary: /tmp/mock-codecov-flags
+          flags: 'unit,integration'
+          name: 'my-custom-upload'
+          dry_run: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+
+      - name: Assert flags and name were passed to CLI
+        run: |
+          if [ ! -f /tmp/codecov-args.txt ]; then
+            echo "FAIL: args file not created by mock binary"
+            exit 1
+          fi
+          ARGS=$(cat /tmp/codecov-args.txt)
+          echo "CLI args: $ARGS"
+
+          # Check that --flag was passed
+          if echo "$ARGS" | grep -q "\-\-flag"; then
+            echo "PASS: --flag argument found in CLI args"
+          else
+            echo "FAIL: --flag argument not found in CLI args"
+            exit 1
+          fi
+
+          # Check that --name was passed
+          if echo "$ARGS" | grep -q "\-\-name"; then
+            echo "PASS: --name argument found in CLI args"
+          else
+            echo "FAIL: --name argument not found in CLI args"
+            exit 1
+          fi
+
+          echo "PASS: All expected arguments were passed to CLI"

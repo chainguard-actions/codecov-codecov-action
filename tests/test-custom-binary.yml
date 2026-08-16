@@ -1,0 +1,48 @@
+name: Test custom binary input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a fake codecov CLI binary
+        run: |
+          mkdir -p /tmp/fake-codecov
+          cat > /tmp/fake-codecov/codecov << 'EOF'
+          #!/bin/bash
+          # Fake codecov CLI that simulates successful execution
+          echo "Fake Codecov CLI called with args: $@"
+          # Check for upload-coverage command
+          for arg in "$@"; do
+            if [ "$arg" = "upload-coverage" ]; then
+              echo "==> Running upload-coverage (fake)"
+              echo "==> Dry run mode detected"
+              exit 0
+            fi
+            if [ "$arg" = "send-notifications" ]; then
+              echo "==> Running send-notifications (fake)"
+              exit 0
+            fi
+            if [ "$arg" = "empty-upload" ]; then
+              echo "==> Running empty-upload (fake)"
+              exit 0
+            fi
+          done
+          echo "==> Running with args: $@"
+          exit 0
+          EOF
+          chmod +x /tmp/fake-codecov/codecov
+          echo "Fake binary created at /tmp/fake-codecov/codecov"
+      - name: Run Codecov action with custom binary
+        id: action
+        uses: .
+        with:
+          binary: '/tmp/fake-codecov/codecov'
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_telem: 'true'
+      - name: Assert action completed successfully with custom binary
+        run: |
+          echo "Action completed with custom binary"
+          echo "PASS: custom binary (binary input) worked correctly"

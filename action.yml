@@ -227,9 +227,9 @@ runs:
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
       env:
-        WORKSPACE_PATH: ${{ github.workspace }}
+        WORKSPACE: ${{ github.workspace }}
       run: |
-        git config --global --add safe.directory "$WORKSPACE_PATH"
+        git config --global --add safe.directory "$WORKSPACE"
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Set fork
       shell: bash
@@ -273,8 +273,8 @@ runs:
           if [ -n "$INPUT_TOKEN" ];
           then
             echo -e "\033[0;32m==>\033[0m Token set from input"
-            CC_TOKEN=$(echo "$INPUT_TOKEN" | tr -d '\n')
-            echo "CC_TOKEN=$CC_TOKEN" >> "$GITHUB_ENV"
+            safe_token=$(printf '%s' "$INPUT_TOKEN" | tr -d '\n\r')
+            echo "CC_TOKEN=$safe_token" >> "$GITHUB_ENV"
           fi
         fi
       env:

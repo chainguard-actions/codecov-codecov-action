@@ -1,0 +1,21 @@
+name: Test handle no reports found
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Run Codecov action with no coverage files and handle_no_reports_found
+        id: action
+        uses: .
+        with:
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          directory: '/tmp/nonexistent-coverage-dir'
+      - name: Assert action completed successfully without reports
+        run: |
+          echo "Action completed without error even with no coverage reports"
+          echo "PASS: handle_no_reports_found=true worked correctly"

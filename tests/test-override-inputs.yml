@@ -1,0 +1,24 @@
+name: Test override inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          token: 'fake-codecov-token'
+          url: 'https://codecov.io'
+          slug: 'owner/repo'
+          override_branch: 'main'
+          override_build: '42'
+          override_build_url: 'https://example.com/build/42'
+          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          handle_no_reports_found: 'true'
+          skip_validation: 'true'
+      - name: Assert action completed
+        run: |
+          echo "PASS: action completed with override inputs"

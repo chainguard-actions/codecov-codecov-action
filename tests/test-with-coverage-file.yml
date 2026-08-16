@@ -1,0 +1,43 @@
+name: Test with coverage file
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a minimal coverage file
+        run: |
+          mkdir -p /tmp/coverage
+          cat > /tmp/coverage/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="0.8" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="example.py" filename="example.py" line-rate="0.8" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+          echo "Coverage file created at /tmp/coverage/coverage.xml"
+      - name: Run Codecov action with coverage file in dry-run mode
+        id: action
+        uses: .
+        with:
+          files: '/tmp/coverage/coverage.xml'
+          dry_run: 'true'
+          skip_validation: 'true'
+          disable_search: 'true'
+          disable_telem: 'true'
+          flags: 'unit'
+          name: 'test-upload'
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed with coverage file in dry-run mode"
+          echo "PASS: coverage file upload dry-run succeeded"

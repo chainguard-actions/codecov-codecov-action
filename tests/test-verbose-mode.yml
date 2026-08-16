@@ -1,0 +1,52 @@
+name: Test verbose mode with mock binary
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create mock Codecov CLI binary that captures verbose flag
+        run: |
+          cat > /tmp/mock-codecov-verbose << 'EOF'
+          #!/usr/bin/env bash
+          echo "Mock Codecov CLI called with args: $@"
+          echo "$@" > /tmp/codecov-verbose-args.txt
+          exit 0
+          EOF
+          chmod +x /tmp/mock-codecov-verbose
+
+      - id: action
+        uses: .
+        with:
+          binary: /tmp/mock-codecov-verbose
+          verbose: 'true'
+          dry_run: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+
+      - name: Assert verbose flag was passed to CLI
+        run: |
+          if [ ! -f /tmp/codecov-verbose-args.txt ]; then
+            echo "FAIL: args file not created by mock binary"
+            exit 1
+          fi
+          ARGS=$(cat /tmp/codecov-verbose-args.txt)
+          echo "CLI args: $ARGS"
+
+          # Check that --verbose flag was passed
+          if echo "$ARGS" | grep -q "\-\-verbose"; then
+            echo "PASS: --verbose argument found in CLI args"
+          else
+            echo "FAIL: --verbose argument not found in CLI args"
+            exit 1
+          fi
+
+          echo "PASS: Verbose mode test completed successfully"

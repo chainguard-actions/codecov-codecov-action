@@ -1,0 +1,45 @@
+name: Test pull request event scenario
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/pull/1/merge
+      GITHUB_EVENT_NAME: pull_request
+      GITHUB_HEAD_REF: feature-branch
+      GITHUB_BASE_REF: main
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create mock Codecov CLI binary
+        run: |
+          cat > /tmp/mock-codecov-pr << 'EOF'
+          #!/usr/bin/env bash
+          echo "Mock Codecov CLI called with args: $@"
+          echo "$@" > /tmp/codecov-pr-args.txt
+          exit 0
+          EOF
+          chmod +x /tmp/mock-codecov-pr
+
+      - id: action
+        uses: .
+        with:
+          binary: /tmp/mock-codecov-pr
+          dry_run: 'true'
+          skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          handle_no_reports_found: 'true'
+          disable_search: 'true'
+          override_pr: '1'
+
+      - name: Assert action completed for pull request event
+        run: |
+          if [ ! -f /tmp/codecov-pr-args.txt ]; then
+            echo "FAIL: args file not created by mock binary"
+            exit 1
+          fi
+          ARGS=$(cat /tmp/codecov-pr-args.txt)
+          echo "CLI args: $ARGS"
+          echo "PASS: Action completed successfully for pull request event"
