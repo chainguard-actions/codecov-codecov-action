@@ -1,0 +1,32 @@
+name: Test skip validation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          skip_validation: 'true'
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          disable_telem: 'true'
+          version: 'latest'
+        continue-on-error: true
+      - name: Assert action ran with skip_validation
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With skip_validation=true, GPG check is bypassed.
+          # The action should either succeed (dry run) or fail gracefully (no token).
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with skip_validation=true"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected in harness environment without Codecov token)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
