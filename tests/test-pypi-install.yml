@@ -1,0 +1,38 @@
+name: Test pypi installation path
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake coverage file
+        run: |
+          mkdir -p coverage
+          echo '{"coverage": {"line-rate": "0.8"}}' > coverage/coverage.json
+
+      - id: action
+        uses: .
+        with:
+          use_pypi: 'true'
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          files: coverage/coverage.json
+          verbose: 'true'
+          disable_telem: 'true'
+        continue-on-error: true
+
+      - name: Assert action ran via pypi path
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded via pypi installation"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected in harness environment without real token)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

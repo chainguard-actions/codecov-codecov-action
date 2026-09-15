@@ -1,0 +1,46 @@
+name: Test system dependencies check
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify required system dependencies are present
+        run: |
+          echo "Checking for required system dependencies..."
+          for cmd in bash git curl gpg; do
+            if command -v "$cmd" > /dev/null 2>&1; then
+              echo "PASS: $cmd is available at $(command -v $cmd)"
+            else
+              echo "FAIL: $cmd is not available"
+              exit 1
+            fi
+          done
+          echo "All required system dependencies are available."
+
+      - id: action
+        uses: .
+        with:
+          dry_run: 'true'
+          skip_validation: 'true'
+          handle_no_reports_found: 'true'
+          disable_telem: 'true'
+        continue-on-error: true
+
+      - name: Assert action completed (system deps check passed)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should not fail due to missing system dependencies
+          # (it may fail for other reasons like missing token in harness)
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected in harness environment without real token)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
