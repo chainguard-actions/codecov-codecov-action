@@ -14,6 +14,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v6.0.1 | [`v6.0.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.1) | [`e79a696`](https://github.com/codecov/codecov-action/commit/e79a6962e0d4c0c17b229090214935d2e33f8354) |
 | v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.0.0) | [`fb8b358`](https://github.com/codecov/codecov-action/commit/fb8b3582c8e4def4969c97caa2f19720cb33a72f) |
 | v7.1.0 | [`v7.1.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.0) | [`0b35c9e`](https://github.com/codecov/codecov-action/commit/0b35c9ecc4f0529d0eb674914510c22f85b196b4) |
+| v7.1.1 | [`v7.1.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.1) | [`303a32d`](https://github.com/codecov/codecov-action/commit/303a32d7a59b442fa8d48b6a1cc6825c09c847a5) |
 
 ## Privacy
 
