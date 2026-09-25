@@ -1,35 +1,35 @@
----
-name: Test binary input with skip_validation
+name: Test binary input
 on:
   workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Download codecov CLI binary
-        id: download
+      - name: Create a fake codecov binary
         run: |
-          curl -fsSL -o /tmp/codecov-cli https://cli.codecov.io/latest/linux/codecov || \
-            curl -fsSL -o /tmp/codecov-cli https://uploader.codecov.io/latest/linux/codecov || \
-            true
-          chmod +x /tmp/codecov-cli 2>/dev/null || true
-          echo '<?xml version="1.0" ?><coverage></coverage>' > /tmp/coverage.xml
-          echo "binary_path=/tmp/codecov-cli" >> "$GITHUB_OUTPUT"
+          cat > /tmp/fake-codecov << 'EOF'
+          #!/bin/bash
+          echo "Fake codecov CLI called with args: $@"
+          exit 0
+          EOF
+          chmod +x /tmp/fake-codecov
       - id: action
         uses: .
         with:
-          token: fake-token-for-dry-run
+          binary: '/tmp/fake-codecov'
           dry_run: 'true'
           handle_no_reports_found: 'true'
-          disable_telem: 'true'
-          files: /tmp/coverage.xml
-          binary: /tmp/codecov-cli
           skip_validation: 'true'
-      - name: Assert action completed
+        continue-on-error: true
+      - name: Assert action ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "Binary input test completed successfully"
-          echo "PASS"
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with binary input"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

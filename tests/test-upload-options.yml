@@ -6,22 +6,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create coverage directory
-        run: mkdir -p /tmp/coverage-dir
+      - name: Create coverage directory and file
+        run: |
+          mkdir -p /tmp/coverage
+          cat > /tmp/coverage/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="0.8" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="example.py" filename="example.py" line-rate="0.8" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
       - id: action
         uses: .
-        continue-on-error: true
         with:
+          directory: '/tmp/coverage'
+          exclude: '/tmp/exclude'
+          env_vars: 'OS,PYTHON'
+          flags: 'unit,integration'
+          plugins: 'noop'
+          report_code: 'test-report'
+          report_type: 'coverage'
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          directory: '/tmp/coverage-dir'
-          exclude: '/tmp/exclude-dir'
-          env_vars: 'OS,PYTHON'
-          flags: 'unit,integration'
-          name: 'my-upload'
-          report_code: 'default'
-          report_type: 'coverage'
+        continue-on-error: true
       - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}

@@ -192,20 +192,20 @@ runs:
     - name: Check system dependencies
       shell: sh
       env:
-        INPUT_SKIP_VALIDATION: ${{ inputs.skip_validation }}
+        SKIP_VALIDATION: ${{ inputs.skip_validation }}
       run: |
         missing_deps=""
 
         # Check for always-required commands
         for cmd in bash git curl; do
-          if ! command -v "$cmd" > /dev/null 2>&1; then
+          if ! command -v "$cmd" >/dev/null 2>&1; then
             missing_deps="$missing_deps $cmd"
           fi
         done
 
         # Check for gpg only if validation is not being skipped
-        if [ "$INPUT_SKIP_VALIDATION" != "true" ]; then
-          if ! command -v gpg > /dev/null 2>&1; then
+        if [ "$SKIP_VALIDATION" != "true" ]; then
+          if ! command -v gpg >/dev/null 2>&1; then
             missing_deps="$missing_deps gpg"
           fi
         fi
@@ -227,9 +227,9 @@ runs:
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
       env:
-        INPUT_GITHUB_WORKSPACE: ${{ github.workspace }}
+        GIT_WORKSPACE: ${{ github.workspace }}
       run: |
-        git config --global --add safe.directory "$INPUT_GITHUB_WORKSPACE"
+        git config --global --add safe.directory "$GIT_WORKSPACE"
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Set fork
       shell: bash
@@ -246,7 +246,7 @@ runs:
         GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
         GITHUB_REPOSITORY: ${{ github.repository }}
     - name: Get OIDC token
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      uses: chainguard-actions/actions-github-script@d3938392869dc1abb006153955add3446aeec543 # v8.0.0
       id: oidc
       with:
         script: |
@@ -273,18 +273,23 @@ runs:
         elif [ -n "$INPUT_CODECOV_TOKEN" ];
         then
           echo -e "\033[0;32m==>\033[0m Token set from env"
-          safe_env_token=$(printf '%s' "$INPUT_CODECOV_TOKEN" | tr -d '\n\r')
-          echo "CC_TOKEN=$safe_env_token" >> "$GITHUB_ENV"
+          safe_token=$(printf '%s' "$INPUT_CODECOV_TOKEN" | tr -d '\n\r')
+          echo "CC_TOKEN=$safe_token" >> "$GITHUB_ENV"
         else
           if [ -n "$INPUT_TOKEN" ];
           then
             echo -e "\033[0;32m==>\033[0m Token set from input"
-            CC_TOKEN=$(printf '%s' "$INPUT_TOKEN" | tr -d '\n\r')
-            echo "CC_TOKEN=$CC_TOKEN" >> "$GITHUB_ENV"
+            safe_token=$(printf '%s' "$INPUT_TOKEN" | tr -d '\n\r')
+            echo "CC_TOKEN=$safe_token" >> "$GITHUB_ENV"
           fi
         fi
     - name: Override branch for forks
       shell: bash
+      env:
+        CC_BRANCH: ${{ inputs.override_branch }}
+        GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
+        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
       run: |
         if [ -z "$CC_BRANCH" ] && [ -z "$CC_TOKEN" ] && [ "$CC_FORK" == 'true' ]
         then
@@ -297,13 +302,14 @@ runs:
 
         safe_branch=$(printf '%s' "$CC_BRANCH" | tr -d '\n\r')
         echo "CC_BRANCH=$safe_branch" >> "$GITHUB_ENV"
-      env:
-        CC_BRANCH: ${{ inputs.override_branch }}
-        GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL: ${{ github.event.pull_request.head.label }}
-        GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
     - name: Override commits and pr for pull requests
       shell: bash
+      env:
+        CC_PR: ${{ inputs.override_pr }}
+        CC_SHA: ${{ inputs.override_commit }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_EVENT_NUMBER: ${{ github.event.number }}
+        GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
         if [ -z "$CC_SHA" ];
         then
@@ -318,12 +324,6 @@ runs:
         safe_pr=$(printf '%s' "$CC_PR" | tr -d '\n\r')
         echo "CC_SHA=$safe_sha" >> "$GITHUB_ENV"
         echo "CC_PR=$safe_pr" >> "$GITHUB_ENV"
-      env:
-        CC_PR: ${{ inputs.override_pr }}
-        CC_SHA: ${{ inputs.override_commit }}
-        GITHUB_EVENT_NAME: ${{ github.event_name }}
-        GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     - name: Upload coverage to Codecov
       run: ${GITHUB_ACTION_PATH}/dist/codecov.sh
       shell: bash

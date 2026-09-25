@@ -16,94 +16,51 @@ Action **codecov--codecov-action/v6.0.0** was hardened automatically. 14 finding
 
 ### script-injection (severity: high)
 
-Multiple ${{ }} expressions are interpolated directly inside run: shell command strings in action.yml, violating sub-rule (a). This allows an attacker-controlled value to be parsed by the shell before quoting can protect it.
-
-1. 'Check system dependencies' step: `if [ "${{ inputs.skip_validation }}" != "true" ]` — inputs.skip_validation interpolated directly into shell.
-2. 'Set safe directory' step: `git config --global --add safe.directory "${{ github.workspace }}"` — github.workspace interpolated directly into shell.
-3. 'Get and set token' step: `if [ "${{ inputs.use_oidc }}" == 'true' ]` — inputs.use_oidc interpolated directly into shell.
-4. 'Get and set token' step: `elif [ -n "${{ env.CODECOV_TOKEN }}" ]` and `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"` — env.CODECOV_TOKEN interpolated directly into shell.
-5. 'Get and set token' step: `if [ -n "${{ inputs.token }}" ]` — inputs.token interpolated directly into shell.
+Sub-rule (a): The 'Check system dependencies' run: block directly interpolates ${{ inputs.skip_validation }} into a shell command string: `if [ "${{ inputs.skip_validation }}" != "true" ]`. This allows an attacker-controlled value to be injected into the shell before quoting takes effect.
 
 Locations:
 
-- `action.yml:163`
-- `action.yml:176`
-- `action.yml:196`
-- `action.yml:199`
-- `action.yml:201`
-- `action.yml:203`
+- `action.yml:160`
 
 ### script-injection (severity: high)
 
-In .github/workflows/main.yml, `${{ steps.codecov-upload.outcome }}` (a steps.*.outputs.* context value) is interpolated directly inside run: shell command strings in two separate steps, violating sub-rule (a). Offending lines: `if [ "${{ steps.codecov-upload.outcome }}" = "failure" ]` in the 'Verify dependency check failed' steps of the run-alpine-missing-deps and run-alpine-partial-deps jobs.
+Sub-rule (a): The 'Set safe directory' run: block directly interpolates ${{ github.workspace }} into a shell command string: `git config --global --add safe.directory "${{ github.workspace }}"`  Any expression inside a run: block is a script-injection risk regardless of context.
 
 Locations:
 
-- `.github/workflows/main.yml:131`
-- `.github/workflows/main.yml:196`
+- `action.yml:176`
+
+### script-injection (severity: high)
+
+Sub-rule (a): The 'Get and set token' run: block directly interpolates multiple ${{ }} expressions into shell command strings: `if [ "${{ inputs.use_oidc }}" == 'true' ]`, `elif [ -n "${{ env.CODECOV_TOKEN }}" ]`, `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"`, `if [ -n "${{ inputs.token }}" ]`, and `CC_TOKEN=$(echo "${{ inputs.token }}" | tr -d '\n')`. Attacker-controlled values from inputs.* and env.* are interpolated directly into shell before the shell parses them.
+
+Locations:
+
+- `action.yml:205`
 
 ### github-env-injection (severity: high)
 
-Multiple run: steps in action.yml write untrusted values to $GITHUB_ENV without the required sanitization step (`printf '%s' ... | tr -d '\n\r'`):
-
-1. 'Get and set token' step: `echo "CC_TOKEN=$CC_OIDC_TOKEN" >> "$GITHUB_ENV"` — CC_OIDC_TOKEN is set from steps.oidc.outputs.result (untrusted step output), no sanitization.
-2. 'Get and set token' step: `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"` — env.CODECOV_TOKEN (untrusted env context) written directly to GITHUB_ENV without sanitization.
-3. 'Override branch for forks' step: `echo "TOKENLESS=$TOKENLESS" >> "$GITHUB_ENV"` — TOKENLESS is set from $GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL (attacker-controlled via PR), no sanitization.
-4. 'Override branch for forks' step: `echo "CC_BRANCH=$CC_BRANCH" >> "$GITHUB_ENV"` — CC_BRANCH is set from $GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL (attacker-controlled), no sanitization.
-5. 'Override commits and pr for pull requests' step: `echo "CC_SHA=$CC_SHA" >> "$GITHUB_ENV"` — CC_SHA is set from $GITHUB_EVENT_PULL_REQUEST_HEAD_SHA (attacker-controlled), no sanitization.
-6. 'Override commits and pr for pull requests' step: `echo "CC_PR=$CC_PR" >> "$GITHUB_ENV"` — CC_PR is set from $GITHUB_EVENT_NUMBER (attacker-controlled), no sanitization.
+The 'Get and set token' step writes ${{ env.CODECOV_TOKEN }} directly to $GITHUB_ENV without sanitization: `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"`. The env.CODECOV_TOKEN value is workflow-controlled and can contain newlines that inject additional environment variables. The required sanitization step (printf '%s' ... | tr -d '\n\r') is absent.
 
 Locations:
 
-- `action.yml:196`
-- `action.yml:201`
-- `action.yml:218`
-- `action.yml:220`
-- `action.yml:234`
-- `action.yml:235`
+- `action.yml:210`
 
-### unpinned-uses (severity: high)
+### github-env-injection (severity: high)
 
-Multiple workflow files reference GitHub Actions by mutable version tags instead of full 40-character commit SHAs, making them vulnerable to supply-chain attacks if the tag is moved.
-
-In .github/workflows/main.yml:
-- `actions/checkout@v5.0.0` (6 occurrences)
-
-In .github/workflows/codeql-analysis.yml:
-- `actions/checkout@v5.0.0`
-- `github/codeql-action/init@v3.30.0`
-- `github/codeql-action/autobuild@v3.30.0`
-- `github/codeql-action/analyze@v3.30.0`
-
-In .github/workflows/scorecards-analysis.yml:
-- `actions/checkout@v5.0.0`
-- `github/codeql-action/upload-sarif@v3.30.0`
+The 'Override branch for forks' step writes unsanitized values to $GITHUB_ENV. The variables TOKENLESS and CC_BRANCH are derived from GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL (set from github.event.pull_request.head.label, an attacker-controlled value on PRs) and written without sanitization: `echo "TOKENLESS=$TOKENLESS" >> "$GITHUB_ENV"` and `echo "CC_BRANCH=$CC_BRANCH" >> "$GITHUB_ENV"`. No printf '%s' | tr -d '\n\r' sanitization is applied.
 
 Locations:
 
-- `.github/workflows/main.yml:10`
-- `.github/workflows/codeql-analysis.yml:28`
-- `.github/workflows/codeql-analysis.yml:33`
-- `.github/workflows/codeql-analysis.yml:43`
-- `.github/workflows/codeql-analysis.yml:50`
-- `.github/workflows/scorecards-analysis.yml:20`
-- `.github/workflows/scorecards-analysis.yml:55`
+- `action.yml:228`
 
-### broad-permissions (severity: medium)
+### github-env-injection (severity: high)
 
-The workflow file .github/workflows/scorecards-analysis.yml has a top-level `permissions: read-all` declaration. This grants overly broad read access to all scopes and should be replaced with specific minimal permissions.
+The 'Override commits and pr for pull requests' step writes unsanitized values to $GITHUB_ENV. CC_SHA comes from GITHUB_EVENT_PULL_REQUEST_HEAD_SHA (set from github.event.pull_request.head.sha) and CC_PR from GITHUB_EVENT_NUMBER (set from github.event.number). Both are written without sanitization: `echo "CC_SHA=$CC_SHA" >> "$GITHUB_ENV"` and `echo "CC_PR=$CC_PR" >> "$GITHUB_ENV"`. No printf '%s' | tr -d '\n\r' sanitization is applied.
 
 Locations:
 
-- `.github/workflows/scorecards-analysis.yml:10`
-
-### missing-permissions (severity: medium)
-
-The workflow file .github/workflows/enforce-license-compliance.yml has no top-level `permissions:` key and no job-level `permissions:` key on any of its jobs. Without explicit permissions, the workflow inherits the repository's default token permissions, which may be overly broad.
-
-Locations:
-
-- `.github/workflows/enforce-license-compliance.yml:1`
+- `action.yml:248`
 
 ### static-inline-injection (severity: high)
 
@@ -173,21 +130,19 @@ Locations:
 
 ### Iteration 1
 
-**Fixes applied:** script-injection, github-env-injection, unpinned-uses, broad-permissions, missing-permissions, static-inline-injection, static-unsanitized-env-write
+**Fixes applied:** script-injection, github-env-injection, static-inline-injection, static-unsanitized-env-write
 
 **Notes:**
 
-Fixed all findings across action.yml and workflow files:
+Fixed all 14 findings in hardened/action/action.yml:
 
-1. action.yml script-injection: Moved inputs.skip_validation (Check system dependencies), github.workspace (Set safe directory), inputs.use_oidc, env.CODECOV_TOKEN, and inputs.token (Get and set token) from inline ${{ }} expressions in run: blocks to env: blocks.
+1. 'Check system dependencies' step: Moved ${{ inputs.skip_validation }} to env block as SKIP_VALIDATION; referenced as $SKIP_VALIDATION in shell.
 
-2. main.yml script-injection: Moved steps.codecov-upload.outcome to env: blocks (CODECOV_UPLOAD_OUTCOME) in both 'Verify dependency check failed' steps in run-alpine-missing-deps and run-alpine-partial-deps jobs.
+2. 'Set safe directory' step: Moved ${{ github.workspace }} to env block as GIT_WORKSPACE; referenced as $GIT_WORKSPACE in shell.
 
-3. action.yml github-env-injection: Added printf '%s' ... | tr -d '\n\r' sanitization before all GITHUB_ENV writes for CC_OIDC_TOKEN, CODECOV_TOKEN, CC_BRANCH, TOKENLESS, CC_SHA, and CC_PR.
+3. 'Get and set token' step: Moved ${{ inputs.use_oidc }}, ${{ env.CODECOV_TOKEN }}, and ${{ inputs.token }} to env block as INPUT_USE_OIDC, INPUT_CODECOV_TOKEN, INPUT_TOKEN. All GITHUB_ENV writes now use printf '%s' | tr -d '\n\r' sanitization (for CC_OIDC_TOKEN, CODECOV_TOKEN, and inputs.token paths).
 
-4. unpinned-uses: Pinned actions/checkout@v5.0.0 → @08c6903cd8c0fde910a37f88322edcfb5dd907a8 (6 occurrences in main.yml, 1 in codeql-analysis.yml, 1 in scorecards-analysis.yml); pinned github/codeql-action/{init,autobuild,analyze,upload-sarif}@v3.30.0 → @2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d.
+4. 'Override branch for forks' step: Added printf/tr sanitization for TOKENLESS and CC_BRANCH before writing to GITHUB_ENV.
 
-5. broad-permissions: Replaced top-level `permissions: read-all` with `permissions: {}` in scorecards-analysis.yml (job-level permissions already specify needed scopes).
-
-6. missing-permissions: Added `permissions: contents: read` to enforce-license-compliance.yml.
+5. 'Override commits and pr for pull requests' step: Added printf/tr sanitization for CC_SHA and CC_PR before writing to GITHUB_ENV. Moved env block before run block to fix YAML structure (GITHUB_EVENT_NAME, GITHUB_EVENT_NUMBER, GITHUB_EVENT_PULL_REQUEST_HEAD_SHA were originally after the run block).
 

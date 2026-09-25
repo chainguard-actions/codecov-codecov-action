@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test base_sha input
 on:
   workflow_dispatch:
 jobs:
@@ -9,12 +9,7 @@ jobs:
       - id: action
         uses: .
         with:
-          token: fake-codecov-token
-          override_branch: main
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
+          base_sha: 'cccccccccccccccccccccccccccccccccccccccc'
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
@@ -25,7 +20,7 @@ jobs:
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action ran with override inputs"
+            echo "PASS: action ran with base_sha input"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1
