@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test advanced options inputs
 on:
   workflow_dispatch:
 jobs:
@@ -6,16 +6,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory
+        run: mkdir -p /tmp/workdir
       - id: action
         uses: .
         with:
-          token: 'test-token-value'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
-          slug: 'myorg/myrepo'
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: '/tmp/ignore'
+          gcov_include: '/tmp/include'
+          os: 'linux'
+          swift_project: 'MySwiftProject'
+          job_code: 'job-001'
+          url: 'https://codecov.io'
+          working-directory: '/tmp/workdir'
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
@@ -26,7 +29,7 @@ jobs:
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action ran with override inputs"
+            echo "PASS: action ran with advanced option inputs"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1
