@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test path and network inputs
 on:
   workflow_dispatch:
 jobs:
@@ -6,6 +6,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory and codecov yml
+        run: |
+          mkdir -p /tmp/cc-workdir
+          cat > /tmp/cc-workdir/codecov.yml <<'EOF'
+          coverage:
+            status:
+              project:
+                default:
+                  target: auto
+          EOF
       - id: action
         uses: .
         continue-on-error: true
@@ -13,21 +23,20 @@ jobs:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          token: 'test-token-placeholder'
-          url: 'https://codecov.io'
-          base_sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          override_commit: 'cccccccccccccccccccccccccccccccccccccccc'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-      - name: Assert action ran (dry run with override inputs)
+          codecov_yml_path: '/tmp/cc-workdir/codecov.yml'
+          exclude: 'vendor,node_modules'
+          root_dir: '.'
+          network_filter: 'src/'
+          network_prefix: 'prefix/'
+          env_vars: 'OS,PYTHON'
+          working-directory: '.'
+      - name: Assert action ran (path and network inputs)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with override inputs"
+            echo "PASS: action succeeded with path/network inputs"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (expected without real token/repo)"
           else

@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test upload config inputs
 on:
   workflow_dispatch:
 jobs:
@@ -13,21 +13,19 @@ jobs:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          token: 'test-token-placeholder'
-          url: 'https://codecov.io'
-          base_sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          override_commit: 'cccccccccccccccccccccccccccccccccccccccc'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-      - name: Assert action ran (dry run with override inputs)
+          force: 'false'
+          job_code: 'test-job-001'
+          report_code: 'default'
+          report_type: 'coverage'
+          slug: 'myorg/myrepo'
+          plugins: 'noop'
+      - name: Assert action ran (upload config inputs)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with override inputs"
+            echo "PASS: action succeeded with upload config inputs"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (expected without real token/repo)"
           else

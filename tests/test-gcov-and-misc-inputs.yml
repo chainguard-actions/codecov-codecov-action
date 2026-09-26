@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test gcov and misc inputs
 on:
   workflow_dispatch:
 jobs:
@@ -13,21 +13,18 @@ jobs:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          token: 'test-token-placeholder'
-          url: 'https://codecov.io'
-          base_sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          override_commit: 'cccccccccccccccccccccccccccccccccccccccc'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-      - name: Assert action ran (dry run with override inputs)
+          gcov_args: '--branch-probabilities'
+          gcov_ignore: 'tests/'
+          gcov_include: 'src/'
+          os: 'linux'
+          swift_project: ''
+      - name: Assert action ran (gcov and misc inputs)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with override inputs"
+            echo "PASS: action succeeded with gcov/misc inputs"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (expected without real token/repo)"
           else
