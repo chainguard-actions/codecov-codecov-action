@@ -10,57 +10,56 @@
 
 **Harden Agent Version:** `2`
 
-Action **codecov--codecov-action/v6.0.0** was hardened automatically. 14 finding(s) were identified and resolved across 1 iteration(s).
+Action **codecov--codecov-action/v6.0.0** was hardened automatically. 10 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### script-injection (severity: high)
 
-Sub-rule (a): The 'Check system dependencies' run: block directly interpolates ${{ inputs.skip_validation }} into a shell command string: `if [ "${{ inputs.skip_validation }}" != "true" ]`. This allows an attacker-controlled value to be injected into the shell before quoting takes effect.
+Sub-rule (a): Multiple `${{ }}` expressions are interpolated directly inside `run:` shell command strings, allowing script injection.
+
+1. Step "Check system dependencies": `if [ "${{ inputs.skip_validation }}" != "true" ]` — the `inputs.skip_validation` value is injected directly into the shell before quoting can protect it.
+
+2. Step "Set safe directory": `git config --global --add safe.directory "${{ github.workspace }}"` — `github.workspace` is interpolated directly into the shell command.
+
+3. Step "Get and set token": Three direct interpolations in the run block:
+   - `if [ "${{ inputs.use_oidc }}" == 'true' ]`
+   - `elif [ -n "${{ env.CODECOV_TOKEN }}" ]`
+   - `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"`
+   - `if [ -n "${{ inputs.token }}" ]`
+   - `CC_TOKEN=$(echo "${{ inputs.token }}" | tr -d '\n')`
+
+All of these allow an attacker-controlled value to be interpreted as shell syntax before the shell ever sees it.
 
 Locations:
 
-- `action.yml:160`
-
-### script-injection (severity: high)
-
-Sub-rule (a): The 'Set safe directory' run: block directly interpolates ${{ github.workspace }} into a shell command string: `git config --global --add safe.directory "${{ github.workspace }}"`  Any expression inside a run: block is a script-injection risk regardless of context.
-
-Locations:
-
-- `action.yml:176`
-
-### script-injection (severity: high)
-
-Sub-rule (a): The 'Get and set token' run: block directly interpolates multiple ${{ }} expressions into shell command strings: `if [ "${{ inputs.use_oidc }}" == 'true' ]`, `elif [ -n "${{ env.CODECOV_TOKEN }}" ]`, `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"`, `if [ -n "${{ inputs.token }}" ]`, and `CC_TOKEN=$(echo "${{ inputs.token }}" | tr -d '\n')`. Attacker-controlled values from inputs.* and env.* are interpolated directly into shell before the shell parses them.
-
-Locations:
-
-- `action.yml:205`
+- `action.yml:163`
+- `action.yml:183`
+- `action.yml:213`
+- `action.yml:217`
+- `action.yml:220`
+- `action.yml:222`
+- `action.yml:224`
 
 ### github-env-injection (severity: high)
 
-The 'Get and set token' step writes ${{ env.CODECOV_TOKEN }} directly to $GITHUB_ENV without sanitization: `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"`. The env.CODECOV_TOKEN value is workflow-controlled and can contain newlines that inject additional environment variables. The required sanitization step (printf '%s' ... | tr -d '\n\r') is absent.
+Multiple `run:` steps write values derived from untrusted inputs or github context to `$GITHUB_ENV` without the required sanitization step (`printf '%s' ... | tr -d '\n\r'`).
+
+1. Step "Get and set token": `echo "CC_TOKEN=${{ env.CODECOV_TOKEN }}" >> "$GITHUB_ENV"` — directly writes an expression-interpolated value to GITHUB_ENV with no newline sanitization.
+
+2. Step "Override branch for forks": `TOKENLESS` and `CC_BRANCH` are assigned from `$GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL` (which is `${{ github.event.pull_request.head.label }}` via the `env:` block) and then written to `$GITHUB_ENV` via `echo "TOKENLESS=$TOKENLESS" >> "$GITHUB_ENV"` and `echo "CC_BRANCH=$CC_BRANCH" >> "$GITHUB_ENV"` — no sanitization applied.
+
+3. Step "Override commits and pr": `CC_SHA` (from `${{ inputs.override_commit }}` / `${{ github.event.pull_request.head.sha }}`) and `CC_PR` (from `${{ inputs.override_pr }}` / `${{ github.event.number }}`) are written to `$GITHUB_ENV` via `echo "CC_SHA=$CC_SHA" >> "$GITHUB_ENV"` and `echo "CC_PR=$CC_PR" >> "$GITHUB_ENV"` — no sanitization applied.
+
+An attacker can inject newlines into these values to set arbitrary environment variables for subsequent steps.
 
 Locations:
 
-- `action.yml:210`
-
-### github-env-injection (severity: high)
-
-The 'Override branch for forks' step writes unsanitized values to $GITHUB_ENV. The variables TOKENLESS and CC_BRANCH are derived from GITHUB_EVENT_PULL_REQUEST_HEAD_LABEL (set from github.event.pull_request.head.label, an attacker-controlled value on PRs) and written without sanitization: `echo "TOKENLESS=$TOKENLESS" >> "$GITHUB_ENV"` and `echo "CC_BRANCH=$CC_BRANCH" >> "$GITHUB_ENV"`. No printf '%s' | tr -d '\n\r' sanitization is applied.
-
-Locations:
-
-- `action.yml:228`
-
-### github-env-injection (severity: high)
-
-The 'Override commits and pr for pull requests' step writes unsanitized values to $GITHUB_ENV. CC_SHA comes from GITHUB_EVENT_PULL_REQUEST_HEAD_SHA (set from github.event.pull_request.head.sha) and CC_PR from GITHUB_EVENT_NUMBER (set from github.event.number). Both are written without sanitization: `echo "CC_SHA=$CC_SHA" >> "$GITHUB_ENV"` and `echo "CC_PR=$CC_PR" >> "$GITHUB_ENV"`. No printf '%s' | tr -d '\n\r' sanitization is applied.
-
-Locations:
-
-- `action.yml:248`
+- `action.yml:220`
+- `action.yml:237`
+- `action.yml:239`
+- `action.yml:253`
+- `action.yml:254`
 
 ### static-inline-injection (severity: high)
 
@@ -134,15 +133,15 @@ Locations:
 
 **Notes:**
 
-Fixed all 14 findings in hardened/action/action.yml:
+Fixed all findings in hardened/action/action.yml:
 
-1. 'Check system dependencies' step: Moved ${{ inputs.skip_validation }} to env block as SKIP_VALIDATION; referenced as $SKIP_VALIDATION in shell.
+1. **Check system dependencies**: Moved `${{ inputs.skip_validation }}` to `env: INPUT_SKIP_VALIDATION` and referenced it as `$INPUT_SKIP_VALIDATION` in the shell script.
 
-2. 'Set safe directory' step: Moved ${{ github.workspace }} to env block as GIT_WORKSPACE; referenced as $GIT_WORKSPACE in shell.
+2. **Set safe directory**: Moved `${{ github.workspace }}` to `env: INPUT_GITHUB_WORKSPACE` and referenced it as `$INPUT_GITHUB_WORKSPACE` in the shell script.
 
-3. 'Get and set token' step: Moved ${{ inputs.use_oidc }}, ${{ env.CODECOV_TOKEN }}, and ${{ inputs.token }} to env block as INPUT_USE_OIDC, INPUT_CODECOV_TOKEN, INPUT_TOKEN. All GITHUB_ENV writes now use printf '%s' | tr -d '\n\r' sanitization (for CC_OIDC_TOKEN, CODECOV_TOKEN, and inputs.token paths).
+3. **Get and set token**: Moved `${{ inputs.use_oidc }}`, `${{ env.CODECOV_TOKEN }}`, and `${{ inputs.token }}` to env block as `INPUT_USE_OIDC`, `INPUT_CODECOV_TOKEN`, and `INPUT_TOKEN`. Also added `printf '%s' ... | tr -d '\n\r'` sanitization for all values written to `$GITHUB_ENV` (CC_OIDC_TOKEN, CODECOV_TOKEN, and inputs.token paths).
 
-4. 'Override branch for forks' step: Added printf/tr sanitization for TOKENLESS and CC_BRANCH before writing to GITHUB_ENV.
+4. **Override branch for forks**: Added `printf '%s' ... | tr -d '\n\r'` sanitization for `TOKENLESS` and `CC_BRANCH` before writing to `$GITHUB_ENV`.
 
-5. 'Override commits and pr for pull requests' step: Added printf/tr sanitization for CC_SHA and CC_PR before writing to GITHUB_ENV. Moved env block before run block to fix YAML structure (GITHUB_EVENT_NAME, GITHUB_EVENT_NUMBER, GITHUB_EVENT_PULL_REQUEST_HEAD_SHA were originally after the run block).
+5. **Override commits and pr for pull requests**: Added `printf '%s' ... | tr -d '\n\r'` sanitization for `CC_SHA` and `CC_PR` before writing to `$GITHUB_ENV`.
 
