@@ -226,10 +226,8 @@ runs:
     - name: Set safe directory
       if: ${{ inputs.disable_safe_directory != 'true' }}
       shell: bash
-      env:
-        SAFE_DIRECTORY: ${{ github.workspace }}
       run: |
-        git config --global --add safe.directory "$SAFE_DIRECTORY"
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
     - name: Set fork
       shell: bash

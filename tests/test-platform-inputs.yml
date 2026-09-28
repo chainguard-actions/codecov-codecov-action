@@ -1,4 +1,4 @@
-name: Test override inputs
+name: Test platform and path inputs
 on:
   workflow_dispatch:
 jobs:
@@ -6,6 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create working directory
+        run: mkdir -p /tmp/test-workdir
       - id: action
         uses: .
         continue-on-error: true
@@ -13,19 +15,16 @@ jobs:
           dry_run: 'true'
           handle_no_reports_found: 'true'
           skip_validation: 'true'
-          base_sha: 'abc1234567890123456789012345678901234567'
-          commit_parent: 'def1234567890123456789012345678901234567'
-          override_commit: 'aabbccddeeff00112233445566778899aabbccdd'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-      - name: Assert action ran (dry run with overrides)
+          os: 'linux'
+          swift_project: 'MySwiftProject'
+          working-directory: '/tmp/test-workdir'
+      - name: Assert action ran (dry run with platform inputs)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
           if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with override inputs"
+            echo "PASS: action succeeded with platform inputs"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (expected without real token/repo)"
           else
