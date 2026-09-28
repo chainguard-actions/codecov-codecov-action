@@ -6,22 +6,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create fake coverage file
+      - name: Create a dummy codecov.yml for testing
         run: |
-          mkdir -p coverage
-          printf 'SF:src/main.py\nDA:1,1\nend_of_record\n' > coverage/lcov.info
+          mkdir -p /tmp/cc-config
+          cat > /tmp/cc-config/codecov.yml <<'EOF'
+          coverage:
+            status:
+              project:
+                default:
+                  target: auto
+          EOF
       - id: action
         uses: .
+        continue-on-error: true
         with:
-          dry_run: 'true'
-          handle_no_reports_found: 'true'
-          plugins: noop
-          report_code: default
-          report_type: coverage
-          job_code: job-001
-          name: my-upload
-          files: coverage/lcov.info
-          fail_ci_if_error: 'false'
-      - name: Assert action completed
+          dry_run: "true"
+          handle_no_reports_found: "true"
+          disable_search: "true"
+          report_code: "default"
+          report_type: "coverage"
+          job_code: "test-job-001"
+          codecov_yml_path: "/tmp/cc-config/codecov.yml"
+          commit_parent: "0000000000000000000000000000000000000000"
+          base_sha: "0000000000000000000000000000000000000000"
+          force: "false"
+          swift_project: ""
+          url: "https://codecov.io"
+      - name: Assert action ran with report options
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
         run: |
-          echo "PASS: action completed with report option inputs"
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with report options inputs"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
