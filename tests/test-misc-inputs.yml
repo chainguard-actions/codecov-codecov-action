@@ -6,32 +6,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create working directory and codecov yml
+      - name: Set up working directory and codecov yml
         run: |
           mkdir -p /tmp/workdir
-          cat > /tmp/workdir/codecov.yml << 'EOF'
-          coverage:
-            status:
-              project:
-                default:
-                  target: auto
+          cat > /tmp/codecov.yml << 'EOF'
+          codecov:
+            require_ci_to_pass: no
           EOF
       - id: action
         uses: .
-        with:
-          slug: 'myorg/myrepo'
-          url: 'https://codecov.io'
-          os: 'linux'
-          swift_project: 'MySwiftProject'
-          job_code: 'job-001'
-          force: 'false'
-          working-directory: '/tmp/workdir'
-          codecov_yml_path: '/tmp/workdir/codecov.yml'
-          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-          dry_run: 'true'
-          handle_no_reports_found: 'true'
-          skip_validation: 'true'
         continue-on-error: true
+        with:
+          dry_run: "true"
+          base_sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          commit_parent: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          job_code: "test-job-001"
+          os: "linux"
+          swift_project: ""
+          codecov_yml_path: "/tmp/codecov.yml"
+          working-directory: "/tmp/workdir"
+          handle_no_reports_found: "true"
       - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}

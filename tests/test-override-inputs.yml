@@ -10,15 +10,15 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          dry_run: 'true'
-          handle_no_reports_found: 'true'
-          token: 'test-token-placeholder'
-          slug: 'test-owner/test-repo'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/build/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
+          dry_run: "true"
+          token: "test-token-placeholder"
+          slug: "owner/repo"
+          override_branch: "main"
+          override_build: "42"
+          override_build_url: "https://example.com/build/42"
+          override_commit: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          override_pr: "123"
+          handle_no_reports_found: "true"
       - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}
