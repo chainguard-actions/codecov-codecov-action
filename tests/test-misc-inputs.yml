@@ -1,4 +1,4 @@
-name: Test miscellaneous inputs
+name: Test miscellaneous inputs (binary, force, os, swift_project)
 on:
   workflow_dispatch:
 jobs:
@@ -6,28 +6,53 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a fake coverage file and fake binary
+        run: |
+          mkdir -p /tmp/misc-cov
+
+          cat > /tmp/misc-cov/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
+            <packages>
+              <package name="." line-rate="0.8" branch-rate="0" complexity="0">
+                <classes>
+                  <class name="example.py" filename="example.py" line-rate="0.8" branch-rate="0" complexity="0">
+                    <lines>
+                      <line number="1" hits="1"/>
+                    </lines>
+                  </class>
+                </classes>
+              </package>
+            </packages>
+          </coverage>
+          EOF
+
+          # Create a minimal fake codecov CLI binary that accepts upload-coverage and exits 0
+          cat > /tmp/misc-cov/codecov << 'SCRIPT'
+          #!/bin/sh
+          echo "Fake codecov CLI invoked with args: $*"
+          exit 0
+          SCRIPT
+          chmod +x /tmp/misc-cov/codecov
+
+          echo "Created fake coverage file and fake binary"
+
       - id: action
         uses: .
-        continue-on-error: true
         with:
           dry_run: 'true'
-          handle_no_reports_found: 'true'
+          files: '/tmp/misc-cov/coverage.xml'
           skip_validation: 'true'
+          disable_telem: 'true'
+          fail_ci_if_error: 'false'
+          verbose: 'true'
+          binary: '/tmp/misc-cov/codecov'
           force: 'false'
-          job_code: 'test-job-code'
-          network_filter: '/src'
-          network_prefix: 'myproject/'
+          os: 'linux'
           swift_project: 'MySwiftProject'
-      - name: Assert action ran
-        env:
-          OUTCOME: ${{ steps.action.outcome }}
+
+      - name: Assert action completed with misc inputs
         run: |
-          echo "outcome: $OUTCOME"
-          if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with misc inputs"
-          elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (expected in dry-run/no-reports scenario)"
-          else
-            echo "FAIL: unexpected outcome '$OUTCOME'"
-            exit 1
-          fi
+          echo "Action completed successfully with misc inputs"
+          echo "PASS"

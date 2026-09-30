@@ -1,4 +1,4 @@
-name: Test override inputs (branch, build, commit, pr, token, slug)
+name: Test network and path inputs (network_filter, network_prefix, root_dir, url, working-directory)
 on:
   workflow_dispatch:
 jobs:
@@ -7,10 +7,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a fake coverage file
+      - name: Create working directory and fake coverage file
         run: |
-          mkdir -p /tmp/override-cov
-          cat > /tmp/override-cov/coverage.xml << 'EOF'
+          mkdir -p /tmp/workdir-cov
+          cat > /tmp/workdir-cov/coverage.xml << 'EOF'
           <?xml version="1.0" ?>
           <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
             <packages>
@@ -32,20 +32,18 @@ jobs:
         uses: .
         with:
           dry_run: 'true'
-          files: '/tmp/override-cov/coverage.xml'
+          files: '/tmp/workdir-cov/coverage.xml'
           skip_validation: 'true'
           disable_telem: 'true'
           fail_ci_if_error: 'false'
           verbose: 'true'
-          token: 'fake-codecov-token-for-dry-run'
-          slug: 'myorg/myrepo'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/builds/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
+          network_filter: 'src/'
+          network_prefix: 'myproject/'
+          root_dir: '/tmp/workdir-cov'
+          url: 'https://codecov.io'
+          working-directory: '/tmp'
 
-      - name: Assert action completed with override inputs
+      - name: Assert action completed with network inputs
         run: |
-          echo "Action completed successfully with override inputs"
+          echo "Action completed successfully with network and path inputs"
           echo "PASS"

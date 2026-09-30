@@ -1,4 +1,4 @@
-name: Test override inputs (branch, build, commit, pr, token, slug)
+name: Test report inputs (report_code, report_type, job_code, codecov_yml_path, commit_parent, base_sha)
 on:
   workflow_dispatch:
 jobs:
@@ -7,10 +7,10 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a fake coverage file
+      - name: Create fake coverage file and codecov yml
         run: |
-          mkdir -p /tmp/override-cov
-          cat > /tmp/override-cov/coverage.xml << 'EOF'
+          mkdir -p /tmp/report-cov
+          cat > /tmp/report-cov/coverage.xml << 'EOF'
           <?xml version="1.0" ?>
           <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
             <packages>
@@ -26,26 +26,33 @@ jobs:
             </packages>
           </coverage>
           EOF
-          echo "Created fake coverage file"
+          mkdir -p /tmp/report-cov/config
+          cat > /tmp/report-cov/config/codecov.yml << 'EOF'
+          coverage:
+            status:
+              project:
+                default:
+                  target: auto
+          EOF
+          echo "Created fake coverage file and codecov.yml"
 
       - id: action
         uses: .
         with:
           dry_run: 'true'
-          files: '/tmp/override-cov/coverage.xml'
+          files: '/tmp/report-cov/coverage.xml'
           skip_validation: 'true'
           disable_telem: 'true'
           fail_ci_if_error: 'false'
           verbose: 'true'
-          token: 'fake-codecov-token-for-dry-run'
-          slug: 'myorg/myrepo'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/builds/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
+          report_code: 'default'
+          report_type: 'coverage'
+          job_code: 'test-job-001'
+          codecov_yml_path: '/tmp/report-cov/config/codecov.yml'
+          commit_parent: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+          base_sha: 'cccccccccccccccccccccccccccccccccccccccc'
 
-      - name: Assert action completed with override inputs
+      - name: Assert action completed with report inputs
         run: |
-          echo "Action completed successfully with override inputs"
+          echo "Action completed successfully with report inputs"
           echo "PASS"

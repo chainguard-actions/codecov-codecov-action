@@ -1,4 +1,4 @@
-name: Test override inputs (branch, build, commit, pr, token, slug)
+name: Test gcov and search inputs (gcov_args, gcov_ignore, gcov_include, env_vars, exclude, plugins)
 on:
   workflow_dispatch:
 jobs:
@@ -9,8 +9,8 @@ jobs:
 
       - name: Create a fake coverage file
         run: |
-          mkdir -p /tmp/override-cov
-          cat > /tmp/override-cov/coverage.xml << 'EOF'
+          mkdir -p /tmp/gcov-cov
+          cat > /tmp/gcov-cov/coverage.xml << 'EOF'
           <?xml version="1.0" ?>
           <coverage version="5.5" timestamp="1234567890" lines-valid="10" lines-covered="8" line-rate="0.8" branches-covered="0" branches-valid="0" branch-rate="0" complexity="0">
             <packages>
@@ -32,20 +32,19 @@ jobs:
         uses: .
         with:
           dry_run: 'true'
-          files: '/tmp/override-cov/coverage.xml'
+          files: '/tmp/gcov-cov/coverage.xml'
           skip_validation: 'true'
           disable_telem: 'true'
           fail_ci_if_error: 'false'
           verbose: 'true'
-          token: 'fake-codecov-token-for-dry-run'
-          slug: 'myorg/myrepo'
-          override_branch: 'main'
-          override_build: '42'
-          override_build_url: 'https://example.com/builds/42'
-          override_commit: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-          override_pr: '123'
+          gcov_args: '--preserve-paths'
+          gcov_ignore: 'vendor/'
+          gcov_include: 'src/'
+          env_vars: 'OS,PYTHON'
+          exclude: 'vendor,node_modules'
+          plugins: 'noop'
 
-      - name: Assert action completed with override inputs
+      - name: Assert action completed with gcov and search inputs
         run: |
-          echo "Action completed successfully with override inputs"
+          echo "Action completed successfully with gcov and search inputs"
           echo "PASS"
