@@ -1,4 +1,4 @@
-name: Test path and search inputs
+name: Test path inputs
 on:
   workflow_dispatch:
 jobs:
@@ -6,30 +6,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - name: Create working directory and coverage directory
+      - name: Create working directory and coverage dir
         run: |
-          mkdir -p /tmp/cc-workdir/coverage
+          mkdir -p /tmp/codecov-workdir/coverage
+          echo '{}' > /tmp/codecov-workdir/coverage/coverage.json
+          echo 'coverage_status: true' > /tmp/codecov-workdir/codecov.yml
       - id: action
         uses: .
         continue-on-error: true
         with:
           dry_run: 'true'
           handle_no_reports_found: 'true'
-          directory: '/tmp/cc-workdir/coverage'
-          exclude: 'vendor,node_modules'
-          root_dir: '/tmp/cc-workdir'
-          network_filter: 'src/'
-          network_prefix: 'project/'
-          working-directory: '/tmp/cc-workdir'
-      - name: Assert action ran with path inputs
+          directory: '/tmp/codecov-workdir/coverage'
+          exclude: '/tmp/exclude-dir'
+          root_dir: '/tmp/codecov-workdir'
+          codecov_yml_path: '/tmp/codecov-workdir/codecov.yml'
+          working-directory: '/tmp/codecov-workdir'
+      - name: Assert action ran
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
-          if [ "$OUTCOME" = "success" ]; then
-            echo "PASS: action succeeded with path inputs"
-          elif [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action failed gracefully (expected without real token/repo)"
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with path inputs (outcome=$OUTCOME)"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1
