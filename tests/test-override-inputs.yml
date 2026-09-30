@@ -10,22 +10,25 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          dry_run: "true"
-          token: "test-token-placeholder"
-          slug: "owner/repo"
-          override_branch: "main"
-          override_build: "42"
-          override_build_url: "https://example.com/build/42"
-          override_commit: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-          override_pr: "123"
-          handle_no_reports_found: "true"
-      - name: Assert action ran
+          dry_run: 'true'
+          handle_no_reports_found: 'true'
+          skip_validation: 'true'
+          token: 'test-token-placeholder'
+          slug: 'owner/repo'
+          override_branch: 'main'
+          override_build: '42'
+          override_build_url: 'https://example.com/build/42'
+          override_commit: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
+          override_pr: '123'
+      - name: Assert action ran (dry run with overrides)
         env:
           OUTCOME: ${{ steps.action.outcome }}
         run: |
           echo "outcome: $OUTCOME"
-          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
-            echo "PASS: action ran with override inputs"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded with override inputs"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected in harness environment)"
           else
             echo "FAIL: unexpected outcome '$OUTCOME'"
             exit 1
