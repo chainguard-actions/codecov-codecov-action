@@ -246,7 +246,7 @@ runs:
         GITHUB_EVENT_PULL_REQUEST_HEAD_REPO_FULL_NAME: ${{ github.event.pull_request.head.repo.full_name }}
         GITHUB_REPOSITORY: ${{ github.repository }}
     - name: Get OIDC token
-      uses: chainguard-actions/actions-github-script@4c62f9a0a83dfd27b2898cadaa50c9f5878ab0f4 # v7.0.1
+      uses: chainguard-actions/actions-github-script@bb8e76f85a48e9086f7c4bcfb8fe1aae4193c7ef # v7.0.1
       id: oidc
       with:
         script: |
