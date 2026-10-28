@@ -6,15 +6,15 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 ## Versions
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v4.6.0 | [`v4.6.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v4.6.0) | [`b9fd7d1`](https://github.com/codecov/codecov-action/commit/b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238) |
-| v5.5.5 | [`v5.5.5`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v5.5.5) | [`0fb7174`](https://github.com/codecov/codecov-action/commit/0fb7174895f61a3b6b78fc075e0cd60383518dac) |
-| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.0) | [`57e3a13`](https://github.com/codecov/codecov-action/commit/57e3a136b779b570ffcdbf80b3bdc90e7fab3de2) |
-| v6.0.1 | [`v6.0.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.1) | [`e79a696`](https://github.com/codecov/codecov-action/commit/e79a6962e0d4c0c17b229090214935d2e33f8354) |
-| v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.0.0) | [`fb8b358`](https://github.com/codecov/codecov-action/commit/fb8b3582c8e4def4969c97caa2f19720cb33a72f) |
-| v7.1.0 | [`v7.1.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.0) | [`0b35c9e`](https://github.com/codecov/codecov-action/commit/0b35c9ecc4f0529d0eb674914510c22f85b196b4) |
-| v7.1.1 | [`v7.1.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.1) | [`303a32d`](https://github.com/codecov/codecov-action/commit/303a32d7a59b442fa8d48b6a1cc6825c09c847a5) |
+| Version | Tag | Upstream commit | Hardening report |
+|---------|-----|-----------------|------------------|
+| v4.6.0 | [`v4.6.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v4.6.0) | [`b9fd7d1`](https://github.com/codecov/codecov-action/commit/b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v4.6.0/HARDENING.md) |
+| v5.5.5 | [`v5.5.5`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v5.5.5) | [`0fb7174`](https://github.com/codecov/codecov-action/commit/0fb7174895f61a3b6b78fc075e0cd60383518dac) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v5.5.5/HARDENING.md) |
+| v6.0.0 | [`v6.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.0) | [`57e3a13`](https://github.com/codecov/codecov-action/commit/57e3a136b779b570ffcdbf80b3bdc90e7fab3de2) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v6.0.0/HARDENING.md) |
+| v6.0.1 | [`v6.0.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v6.0.1) | [`e79a696`](https://github.com/codecov/codecov-action/commit/e79a6962e0d4c0c17b229090214935d2e33f8354) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v6.0.1/HARDENING.md) |
+| v7.0.0 | [`v7.0.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.0.0) | [`fb8b358`](https://github.com/codecov/codecov-action/commit/fb8b3582c8e4def4969c97caa2f19720cb33a72f) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v7.0.0/HARDENING.md) |
+| v7.1.0 | [`v7.1.0`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.0) | [`0b35c9e`](https://github.com/codecov/codecov-action/commit/0b35c9ecc4f0529d0eb674914510c22f85b196b4) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v7.1.0/HARDENING.md) |
+| v7.1.1 | [`v7.1.1`](https://github.com/chainguard-actions/codecov-codecov-action/tree/v7.1.1) | [`303a32d`](https://github.com/codecov/codecov-action/commit/303a32d7a59b442fa8d48b6a1cc6825c09c847a5) | [`HARDENING.md`](https://github.com/chainguard-actions/codecov-codecov-action/blob/v7.1.1/HARDENING.md) |
 
 ## Privacy
 
